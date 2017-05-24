@@ -35,4 +35,28 @@ func main() {
 	if err != nil {
 		log.Fatal('Error while setting up server', err)
 	}
-} 
+}
+
+func handleConnections(w http.ResponseWriter, r *http.Request) {
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer ws.Close()
+
+	clients[ws] = true
+
+	for {
+		var msg Message
+
+		err := ws.ReadJSON(&msg)
+		if err != nil {
+			log.Printf("error: %v", err)
+			delete(clients, ws)
+			break
+		}
+		broadcast <- msg
+	}
+
+}
