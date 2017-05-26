@@ -6,11 +6,12 @@ import(
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"gopkg.in/mgo.v2"
 )
 
 var clients = make(map[*websocket.Conn]bool)
 var broadcast = make(chan Message)
-
+var mongodb = "mongodb://test:test123@ds155191.mlab.com:55191/gochat"
 
 type Message struct {
 	Email string `json:"email"`
@@ -63,8 +64,19 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleMessages() {
+	session, err := mgo.Dial(mongodb)
+	if err != nil {
+		panic(err)
+	}
+	defer session.Close()
+
+	chat := session.DB("gochat").C("chats")
 	for {
 		msg := <-broadcast
+		err = chat.Insert(&Message{msg.Email, msg.Username, msg.Message})
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		for client := range clients {
 			err := client.WriteJSON(msg)
