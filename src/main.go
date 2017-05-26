@@ -2,6 +2,7 @@ package main
 
 import(
 	"log"
+	"strconv"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -22,18 +23,18 @@ var upgrader = websocket.Upgrader{}
 func main() {
 	var PORT=8000
 
-	fs := http.FileServer(http.Dir('../public'))
-	http.Handle('/', fs)
+	fs := http.FileServer(http.Dir("../public"))
+	http.Handle("/", fs)
 
-	http.HandleFunc('/ws', handleConnections)
+	http.HandleFunc("/ws", handleConnections)
 
 	go handleMessages()
 
-	log.Println('Server started on port' + PORT)
-	err := http.ListenAndServe(':'+PORT, nil)
+	log.Println("Server started on port" + strconv.Itoa(PORT))
+	httperr := http.ListenAndServe(":"+strconv.Itoa(PORT), nil)
 
-	if err != nil {
-		log.Fatal('Error while setting up server', err)
+	if httperr != nil {
+		log.Fatal("Error while setting up server", httperr)
 	}
 }
 
