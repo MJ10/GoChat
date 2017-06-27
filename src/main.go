@@ -68,6 +68,7 @@ func handleMessages() {
 	if err != nil {
 		panic(err)
 	}
+	log.Println("Connected to database!")
 	defer session.Close()
 
 	chat := session.DB("gochat").C("chats")
